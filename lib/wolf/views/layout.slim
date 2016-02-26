@@ -1,0 +1,34 @@
+doctype html
+
+/! Include mount point data for use in javascripts (e.g. Path in ajax requests)
+html data-mount-point="#{mount_point}"
+  head
+    title == settings.title
+    link rel="icon" href="/favicon.ico"
+
+    script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"
+    link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
+
+    /! Assume child apps have their own css/jss. Explicitly exclude to stop 404 if not
+    - unless settings.respond_to?(:exclude_css) && settings.exclude_css
+      link rel="stylesheet" type="text/css" href="#{mount_point}/css/style.css"
+    - unless settings.respond_to?(:exclude_js) && settings.exclude_js
+      script type="text/javascript" src="#{mount_point}/js/main.js"
+
+    css:
+      body {
+        background-color: #cfb87c;
+      }
+
+      #wrapper {
+        background-color: #ffffff;
+        border: 3px solid black;
+        margin: 20px auto;
+        width: 80%;
+        padding: 10px;
+      }
+
+  body
+    div#wrapper
+      == styled_flash
+      == yield
