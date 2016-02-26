@@ -11,9 +11,9 @@ html data-mount-point="#{mount_point}"
 
     /! Assume child apps have their own css/jss. Explicitly exclude to stop 404 if not
     - unless settings.respond_to?(:exclude_css) && settings.exclude_css
-      link rel="stylesheet" type="text/css" href="#{mount_point}/css/style.css"
+      link rel="stylesheet" type="text/css" href="#{mount_point}/main.css"
     - unless settings.respond_to?(:exclude_js) && settings.exclude_js
-      script type="text/javascript" src="#{mount_point}/js/main.js"
+      script type="text/javascript" src="#{mount_point}/main.js"
 
     css:
       body {
