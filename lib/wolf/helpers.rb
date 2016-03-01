@@ -33,12 +33,13 @@ module Wolf
     # Put terms from API into {:name => id} hash
     def get_enrollment_terms
       terms = {}
-      url = "#{settings.api_base}/accounts/#{settings.canvas_account_id}/terms"
-      response = JSON.parse(RestClient.get(url, auth_header))
+      url = "#{settings.api_base}/accounts/#{settings.canvas_account_id}" \
+            "/terms?per_page=50"
 
-      response['enrollment_terms'].map do |term|
-        terms[term['id'].to_s] = term['name']
-      end
+      response = JSON.parse(RestClient.get(url, auth_header))
+      response['enrollment_terms']
+        .reject { |term| [1, 35, 38, 39].include?(term['id']) }
+        .map    { |term| terms[term['id'].to_s] = term['name'] }
 
       terms
     end
