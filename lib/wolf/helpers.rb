@@ -2,6 +2,15 @@ require 'rest_client'
 
 module Wolf
   module Helpers
+    # Depending on context, canvas IDs sometimes require the id of the
+    # hosting shard to be prepended. Seems static, so hardcode for now.
+    def shard_id(id)
+      id = id.to_s
+      shard = "1043"
+      (13 - id.length).times{ shard += "0" }
+      shard + id
+    end
+
     def set_roles(user_id)
       # Account level roles
       url = "#{settings.api_base}/accounts/#{settings.canvas_account_id}" \
