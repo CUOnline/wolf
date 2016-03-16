@@ -21,6 +21,7 @@ module Wolf
     config_file 'config.yml'
 
     configure do
+      set :api_base, "#{settings.canvas_url}/api/v#{settings.api_version}"
       set :redis, Redis.new
       set :db, DBI.connect(settings.db_dsn, settings.db_user, settings.db_pwd)
       set :base_views, settings.views
