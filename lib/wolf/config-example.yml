@@ -1,6 +1,6 @@
 development: &defaults
   title: 'Wolf'
-  canvas_url: 'ucdenver.beta.instructure.com'
+  canvas_url: 'https://ucdenver.beta.instructure.com'
   api_version: '1'
 
   # Canvas credentials
@@ -38,10 +38,10 @@ test:
   <<: *defaults
   client_id: 10230000000000124
   client_secret: 'super-secret-client-secret-string-for-test-deployment'
-  canvas_url: 'ucdenver.test.instructure.com'
+  canvas_url: 'https://ucdenver.test.instructure.com'
 
 production:
   <<: *defaults
   client_id: 10230000000000125
   client_secret: 'super-secret-client-secret-string-for-production-deployment'
-  canvas_url: 'ucdenver.instructure.com'
+  canvas_url: 'https://ucdenver.instructure.com'
