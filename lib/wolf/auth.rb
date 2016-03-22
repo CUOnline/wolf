@@ -27,7 +27,7 @@ module Wolf
 
         url = "#{settings.api_base}/users/#{session[:user_id]}/profile"
         response = JSON.parse(RestClient.get(url, auth_header))
-        session[:user_email] = response['primary_email']
+        session['user_email'] = response['primary_email']
 
         redirect params['state']
       end
