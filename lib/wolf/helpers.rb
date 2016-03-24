@@ -60,5 +60,21 @@ module Wolf
     def mount_point
       settings.respond_to?(:mount) ? settings.mount : ''
     end
+
+    def canvas_api(method, path, options={})
+      url = "#{settings.canvas_url}/api/v#{settings.api_version}/#{path}"
+      headers = options[:headers] ? options[:headers].merge(auth_header) : auth_header
+      options = {:method => method, :url => url, :headers => headers}.merge(options)
+
+      begin
+        response = RestClient::Request.execute(options)
+        data = JSON.parse(response)
+      rescue RestClient::Exception => e
+        settings.error_log.warn(options)
+        settings.error_log.warn(e.message + "\n")
+      end
+
+      data || []
+    end
   end
 end
