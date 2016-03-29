@@ -55,7 +55,7 @@ module Wolf
 
       # Initialize log files
       Dir.mkdir('log') unless File.exists?('log')
-      ['auth', 'error', 'request'].each do |log_type|
+      ['auth', 'error', 'resque', 'request'].each do |log_type|
         log_file = "#{root}/log/#{log_type}.log"
         File.new(log_file, 'w') unless File.exists?(log_file)
         set :"#{log_type}_log",  Logger.new(log_file, 'monthly')
