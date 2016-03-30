@@ -35,6 +35,8 @@ module Wolf
       while row = cursor.fetch_hash
         session[:user_roles] << row["name"]
       end
+      settings.auth_log.info("Roles: #{session[:user_roles].inspect}")
+      settings.auth_log.info("Allowed roles: #{settings.allowed_roles.inspect}")
 
       ensure cursor.finish if cursor
     end
