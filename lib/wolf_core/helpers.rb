@@ -1,6 +1,6 @@
 require 'rest_client'
 
-module Wolf
+module WolfCore
   module Helpers
     # Depending on context, canvas IDs sometimes require the id of the
     # hosting shard to be prepended. Seems static, so hardcode for now.

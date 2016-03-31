@@ -11,14 +11,14 @@ require 'sinatra/base'
 require 'sinatra/config_file'
 require 'sinatra/flash'
 
-module Wolf
-  class Base < Sinatra::Base
+module WolfCore
+  class App < Sinatra::Base
     register Sinatra::ConfigFile
     register Sinatra::Flash
-    register Wolf::Helpers
-    helpers Wolf::Helpers
+    register WolfCore::Helpers
+    helpers WolfCore::Helpers
 
-    config_file 'config.yml'
+    config_file ENV['wolf_config'] || 'config.yml'
 
     configure do
       set :api_base, "#{settings.canvas_url}/api/v#{settings.api_version}"
@@ -36,8 +36,8 @@ module Wolf
 
     Mail.defaults do
       delivery_method :smtp,
-      address: Wolf::Base.settings.smtp_server,
-      port: Wolf::Base.settings.smtp_port,
+      address: WolfCore::App.settings.smtp_server,
+      port: WolfCore::App.settings.smtp_port,
       openssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
     end
 

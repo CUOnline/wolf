@@ -1,7 +1,9 @@
-module Wolf
-  class Auth < Base
+module WolfCore
+  class Auth < App
 
-    set :auth_log, Logger.new('log/auth.log')
+    if File.exists?('log/auth.log')
+      set :auth_log, Logger.new('log/auth.log')
+    end
 
     get '/' do
         redirect_uri = "#{request.scheme}://#{request.host_with_port}/auth/oauth"

@@ -8,12 +8,12 @@
 
 require 'resque/server'
 
-module Wolf
+module WolfCore
   class ResqueWeb < Rack::Auth::Digest::MD5
       def self.call(env)
         authenticator = Proc.new do |username|
-          if username == Wolf::Base.send(:resque_user)
-            Wolf::Base.send(:resque_pwd)
+          if username == WolfCore::App.send(:resque_user)
+            WolfCore::App.send(:resque_pwd)
           end
         end
 

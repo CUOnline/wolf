@@ -1,3 +1,3 @@
-module Wolf
+module WolfCore
   VERSION = "0.0.1"
 end
