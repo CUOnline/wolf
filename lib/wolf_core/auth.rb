@@ -1,8 +1,12 @@
 module WolfCore
   class Auth < App
-
-    if File.exists?('log/auth.log')
-      set :auth_log, Logger.new('log/auth.log')
+    # By convention, this Auth app is usually served alongside another app,
+    # For which it provides authentication. Try to log to that app's logfile.
+    ['auth', 'error', 'request'].each do |log_type|
+      log_file = "log/#{log_type}.log"
+      if File.exists?(log_file)
+        set :"#{log_type}_log",  Logger.new(log_file, 'monthly')
+      end
     end
 
     get '/' do
