@@ -13,11 +13,10 @@ module WolfCore
 
     def set_roles(user_id)
       # Account level roles
-      url = "#{settings.api_base}/accounts/#{settings.canvas_account_id}" \
-            "/admins?user_id[]=#{user_id}"
+      url = "accounts/#{settings.canvas_account_id}/admins?user_id[]=#{user_id}"
 
-      response = JSON.parse(RestClient.get(url, auth_header))
-      session[:user_roles] = response.collect{|user| user["role"]}
+      admins = canvas_api(:get, url)
+      session[:user_roles] = admins.collect{ |a| a["role"] }
 
       # Course level roles
       query_string = %{
@@ -44,11 +43,9 @@ module WolfCore
     # Put terms from API into {:name => id} hash
     def get_enrollment_terms
       terms = {}
-      url = "#{settings.api_base}/accounts/#{settings.canvas_account_id}" \
-            "/terms?per_page=50"
+      url = "accounts/#{settings.canvas_account_id}/terms?per_page=50"
 
-      response = JSON.parse(RestClient.get(url, auth_header))
-      response['enrollment_terms']
+      canvas_api(:get, url)['enrollment_terms']
         .reject { |term| [1, 35, 38, 39].include?(term['id']) }
         .map    { |term| terms[term['id'].to_s] = term['name'] }
 
@@ -67,10 +64,12 @@ module WolfCore
       url = "#{settings.canvas_url}/api/v#{settings.api_version}/#{path}"
       headers = options[:headers] ? options[:headers].merge(auth_header) : auth_header
       options = {:method => method, :url => url, :headers => headers}.merge(options)
+      settings.request_log.info("API request: #{options.inspect}")
 
       begin
         response = RestClient::Request.execute(options)
-        data = JSON.parse(response)
+        settings.request_log.info("API response: #{response.inspect}")
+        data = JSON.parse(response + "\n")
       rescue RestClient::Exception => e
         settings.error_log.warn(options)
         settings.error_log.warn(e.message + "\n")

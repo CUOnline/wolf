@@ -18,7 +18,7 @@ module WolfCore
                           "scopes=/auth/userinfo"
 
         settings.auth_log.info("Redirect params: #{redirect_params}")
-        redirect "https://ucdenver.instructure.com/login/oauth2/auth?#{redirect_params}"
+        redirect "#{settings.canvas_url}/login/oauth2/auth?#{redirect_params}"
       end
 
       get '/oauth' do
@@ -28,16 +28,17 @@ module WolfCore
           :client_secret => settings.client_secret
         }
 
-        url = "https://ucdenver.instructure.com/login/oauth2/token"
-        response = JSON.parse(RestClient.post(url, payload))
+        # Send URL in options hash because it doesn't use default api_base
+        url = "#{settings.canvas_url}/login/oauth2/token"
+        response = canvas_api(:post, '', {:url => url, :payload => payload})
         session['user_id'] = response['user']['id']
         session['access_token'] = response['user']['access_token']
 
         settings.auth_log.info("User ID: #{session['user_id']}")
         set_roles(session['user_id'])
 
-        url = "#{settings.api_base}/users/#{session[:user_id]}/profile"
-        response = JSON.parse(RestClient.get(url, auth_header))
+        url = "users/#{session[:user_id]}/profile"
+        response = canvas_api(:get, url)
         session['user_email'] = response['primary_email']
         settings.auth_log.info("Email: #{session['user_email']}\n")
 
@@ -46,10 +47,10 @@ module WolfCore
 
       get '/logout' do
         settings.auth_log.info("Logged out user #{session['user_id']}")
+
         if session['access_token']
-          RestClient::Request.execute({
-            :method  => :delete,
-            :url     => "https://ucdenver.instructure.com/login/oauth2/token?",
+          url = "https://ucdenver.instructure.com/login/oauth2/token"
+          canvas_api(:delete, url, {
             :payload => {
               :headers => {
                 :authorization => "Bearer #{session['access_token']}"
@@ -57,6 +58,7 @@ module WolfCore
             }
           })
         end
+
         session.clear
         redirect to '/logged-out'
       end

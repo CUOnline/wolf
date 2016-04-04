@@ -70,8 +70,8 @@ module WolfCore
     end
 
     error do
-      settings.request_log.error(env['sinatra.error'])
-      settings.request_log.error("\n\n")
+      settings.error_log.error(env['sinatra.error'])
+      settings.error_log.error("\n\n")
       slim :error, :layout => false
     end
 
