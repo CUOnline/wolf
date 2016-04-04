@@ -76,7 +76,8 @@ module WolfCore
         settings.error_log.warn(e.message + "\n")
       end
 
-      data || []
+      data
     end
+
   end
 end
