@@ -16,9 +16,9 @@ module WolfCore
     register Sinatra::ConfigFile
     register Sinatra::Flash
     register WolfCore::Helpers
-    helpers WolfCore::Helpers
+    helpers  WolfCore::Helpers
 
-    config_file ENV['wolf_config'] || 'config.yml'
+    config_file ENV['WOLF_CONFIG'] || '/etc/wolf/config.yml'
 
     configure do
       set :api_base, "#{settings.canvas_url}/api/v#{settings.api_version}"
