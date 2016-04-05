@@ -10,67 +10,67 @@ module WolfCore
     end
 
     get '/' do
-        redirect_uri = "#{request.scheme}://#{request.host_with_port}/auth/oauth"
-        redirect_params = "client_id=#{settings.client_id}&" \
-                          "response_type=code&" \
-                          "state=#{params['state']}&" \
-                          "redirect_uri=#{redirect_uri}&" \
-                          "scopes=/auth/userinfo"
+      redirect_uri = "#{request.scheme}://#{request.host_with_port}/auth/oauth"
+      redirect_params = "client_id=#{settings.client_id}&" \
+                        "response_type=code&" \
+                        "state=#{params['state']}&" \
+                        "redirect_uri=#{redirect_uri}&" \
+                        "scopes=/auth/userinfo"
 
-        settings.auth_log.info("Redirect params: #{redirect_params}")
-        redirect "#{settings.canvas_url}/login/oauth2/auth?#{redirect_params}"
-      end
+      settings.auth_log.info("Redirect params: #{redirect_params}")
+      redirect "#{settings.canvas_url}/login/oauth2/auth?#{redirect_params}"
+    end
 
-      get '/oauth' do
-        payload = {
-          :code          => params['code'],
-          :client_id     => settings.client_id,
-          :client_secret => settings.client_secret
-        }
+    get '/oauth' do
+      payload = {
+        :code          => params['code'],
+        :client_id     => settings.client_id,
+        :client_secret => settings.client_secret
+      }
 
-        # Send URL in options hash because it doesn't use default api_base
-        url = "#{settings.canvas_url}/login/oauth2/token"
-        response = canvas_api(:post, '', {:url => url, :payload => payload})
-        session['user_id'] = response['user']['id']
-        session['access_token'] = response['user']['access_token']
+      # Send URL in options hash because it doesn't use default api_base
+      url = "#{settings.canvas_url}/login/oauth2/token"
+      response = canvas_api(:post, '', {:url => url, :payload => payload})
+      session['user_id'] = response['user']['id']
+      session['access_token'] = response['user']['access_token']
 
-        settings.auth_log.info("User ID: #{session['user_id']}")
-        set_roles(session['user_id'])
+      settings.auth_log.info("User ID: #{session['user_id']}")
+      set_roles(session['user_id'])
 
-        url = "users/#{session[:user_id]}/profile"
-        response = canvas_api(:get, url)
-        session['user_email'] = response['primary_email']
-        settings.auth_log.info("Email: #{session['user_email']}\n")
+      url = "users/#{session[:user_id]}/profile"
+      response = canvas_api(:get, url)
+      session['user_email'] = response['primary_email']
+      settings.auth_log.info("Email: #{session['user_email']}\n")
 
-        redirect params['state']
-      end
+      redirect params['state']
+    end
 
-      get '/logout' do
-        settings.auth_log.info("Logged out user #{session['user_id']}")
+    get '/logout' do
+      settings.auth_log.info("Logged out user #{session['user_id']}")
 
-        if session['access_token']
-          url = "https://ucdenver.instructure.com/login/oauth2/token"
-          canvas_api(:delete, url, {
-            :payload => {
-              :headers => {
-                :authorization => "Bearer #{session['access_token']}"
-              }
+      if session['access_token']
+        url = "https://ucdenver.instructure.com/login/oauth2/token"
+        canvas_api(:delete, url, {
+          :payload => {
+            :headers => {
+              :authorization => "Bearer #{session['access_token']}"
             }
-          })
-        end
-
-        session.clear
-        redirect to '/logged-out'
+          }
+        })
       end
 
-      get '/unauthorized' do
-        'Your canvas account not unauthorized to use this resource'
-      end
+      session.clear
+      redirect to '/logged-out'
+    end
 
-      get '/logged-out' do
-        "You have been logged out <a href='/auth/login'>" \
-        "Click here</a> to log in again."
-      end
+    get '/unauthorized' do
+      'Your canvas account not unauthorized to use this resource'
+    end
+
+    get '/logged-out' do
+      "You have been logged out <a href='/auth/login'>" \
+      "Click here</a> to log in again."
+    end
   end
 
   class AuthFilter
