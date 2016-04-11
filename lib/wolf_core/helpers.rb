@@ -73,6 +73,7 @@ module WolfCore
       rescue RestClient::Exception => e
         settings.error_log.warn(options)
         settings.error_log.warn(e.message + "\n")
+        raise
       end
 
       data
