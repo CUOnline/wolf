@@ -23,7 +23,6 @@ module WolfCore
     configure do
       set :api_base, "#{settings.canvas_url}/api/v#{settings.api_version}"
       set :redis, Redis.new
-      set :db, DBI.connect(settings.db_dsn, settings.db_user, settings.db_pwd)
       set :base_views, settings.views
       set :views, [settings.views]
       set :show_exceptions, false if settings.production?

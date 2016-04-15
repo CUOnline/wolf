@@ -79,5 +79,20 @@ module WolfCore
       data
     end
 
+    def canvas_data(query, *params)
+      db = DBI.connect(settings.db_dsn, settings.db_user, settings.db_pwd)
+      cursor = db.prepare(query)
+      begin
+        cursor.execute(*params)
+        results = []
+        while row = cursor.fetch_hash
+          results << row
+        end
+      ensure
+        cursor.finish
+      end
+      results
+    end
+
   end
 end
