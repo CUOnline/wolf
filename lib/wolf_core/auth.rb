@@ -35,7 +35,7 @@ module WolfCore
       session['access_token'] = response['user']['access_token']
 
       settings.auth_log.info("User ID: #{session['user_id']}")
-      set_roles(session['user_id'])
+      session['user_roles'] = user_roles(session['user_id'])
 
       url = "users/#{session[:user_id]}/profile"
       response = canvas_api(:get, url)
@@ -84,7 +84,7 @@ module WolfCore
       headers = { "Content-Type"=>"text/html;charset=utf-8" }
 
       # Redirect un-authenticated users to login
-      if session[:user_id].nil?
+      if session['user_id'].nil?
         headers['Location'] = "#{request.scheme}://#{request.host_with_port}" \
                               "/auth?state=#{request.path}"
         # Needs no-cache headers, or it will continue to redirect after login
@@ -93,7 +93,7 @@ module WolfCore
         [302, headers, []]
 
       # Check authorization of authenticated users
-      elsif (@app.settings.allowed_roles & session[:user_roles]).empty?
+      elsif (@app.settings.allowed_roles & session['user_roles']).empty?
         [403, headers, ['Your canvas account is unauthorized to use this page']]
       else
         @app.call(env)

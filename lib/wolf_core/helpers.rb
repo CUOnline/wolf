@@ -11,12 +11,10 @@ module WolfCore
       shard + id
     end
 
-    def set_roles(user_id)
+    def user_roles(user_id)
       # Account level roles
       url = "accounts/#{settings.canvas_account_id}/admins?user_id[]=#{user_id}"
-
-      admins = canvas_api(:get, url)
-      session[:user_roles] = admins.collect{ |a| a["role"] }
+      roles = canvas_api(:get, url).collect{ |user| user['role'] }
 
       # Course level roles
       query_string = %{
@@ -28,16 +26,12 @@ module WolfCore
           ON enrollment_dim.user_id = user_dim.id
         WHERE user_dim.canvas_id = #{user_id}}
 
-      cursor = settings.db.prepare(query_string)
-      cursor.execute
+      roles << canvas_data(query_string).collect{ |role| role['name'] }
 
-      while row = cursor.fetch_hash
-        session[:user_roles] << row["name"]
-      end
-      settings.auth_log.info("Roles: #{session[:user_roles].inspect}")
+      settings.auth_log.info("Roles: #{roles.inspect}")
       settings.auth_log.info("Allowed roles: #{settings.allowed_roles.inspect}")
 
-      ensure cursor.finish if cursor
+      roles
     end
 
     # Put terms from API into {:name => id} hash
