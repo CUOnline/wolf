@@ -26,7 +26,7 @@ module WolfCore
           ON enrollment_dim.user_id = user_dim.id
         WHERE user_dim.canvas_id = #{user_id}}
 
-      roles << canvas_data(query_string).collect{ |role| role['name'] }
+      roles += canvas_data(query_string).collect{ |role| role['name'] }
 
       settings.auth_log.info("Roles: #{roles.inspect}")
       settings.auth_log.info("Allowed roles: #{settings.allowed_roles.inspect}")
@@ -35,15 +35,19 @@ module WolfCore
     end
 
     # Put terms from API into {:name => id} hash
-    def get_enrollment_terms
-      terms = {}
-      url = "accounts/#{settings.canvas_account_id}/terms?per_page=50"
+    def enrollment_terms
+      if !settings.respond_to?(:terms)
+        terms = {}
+        url = "accounts/#{settings.canvas_account_id}/terms?per_page=50"
 
-      canvas_api(:get, url)['enrollment_terms']
-        .reject { |term| [1, 35, 38, 39].include?(term['id']) }
-        .map    { |term| terms[term['id'].to_s] = term['name'] }
+        canvas_api(:get, url)['enrollment_terms']
+          .reject { |term| [1, 35, 38, 39].include?(term['id']) }
+          .map    { |term| terms[term['id'].to_s] = term['name'] }
 
-      terms
+
+        Sinatra::Base.set :terms, terms
+      end
+      settings.terms
     end
 
     def auth_header
