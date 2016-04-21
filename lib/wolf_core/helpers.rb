@@ -2,6 +2,14 @@ require 'rest_client'
 
 module WolfCore
   module Helpers
+    def auth_header
+      { Authorization: "Bearer #{settings.canvas_token}" }
+    end
+
+    def mount_point
+      settings.respond_to?(:mount) ? settings.mount : ''
+    end
+
     # Depending on context, canvas IDs sometimes require the id of the
     # hosting shard to be prepended. Seems static, so hardcode for now.
     def shard_id(id)
@@ -9,6 +17,42 @@ module WolfCore
       shard = "1043"
       (13 - id.length).times{ shard += "0" }
       shard + id
+    end
+
+    def canvas_api(method, path, options={})
+      url = "#{settings.canvas_url}/api/v#{settings.api_version}/#{path}"
+      headers = options[:headers] ? auth_header.merge(options[:headers]) : auth_header
+      options.delete(:headers)
+
+      options = {:method => method, :url => url, :headers => headers}.merge(options)
+      settings.request_log.info("API request: #{options.inspect}")
+
+      begin
+        response = RestClient::Request.execute(options)
+        settings.request_log.info("API response: #{response.inspect}")
+        data = JSON.parse(response + "\n")
+      rescue RestClient::Exception => e
+        settings.error_log.warn(options)
+        settings.error_log.warn(e.message + "\n")
+        raise
+      end
+
+      data
+    end
+
+    def canvas_data(query, *params)
+      db = DBI.connect(settings.db_dsn, settings.db_user, settings.db_pwd)
+      cursor = db.prepare(query)
+      begin
+        cursor.execute(*params)
+        results = []
+        while row = cursor.fetch_hash
+          results << row
+        end
+      ensure
+        cursor.finish
+      end
+      results
     end
 
     def user_roles(user_id)
@@ -49,48 +93,5 @@ module WolfCore
       end
       settings.terms
     end
-
-    def auth_header
-      { Authorization: "Bearer #{settings.canvas_token}" }
-    end
-
-    def mount_point
-      settings.respond_to?(:mount) ? settings.mount : ''
-    end
-
-    def canvas_api(method, path, options={})
-      url = "#{settings.canvas_url}/api/v#{settings.api_version}/#{path}"
-      headers = options[:headers] ? options[:headers].merge(auth_header) : auth_header
-      options = {:method => method, :url => url, :headers => headers}.merge(options)
-      settings.request_log.info("API request: #{options.inspect}")
-
-      begin
-        response = RestClient::Request.execute(options)
-        settings.request_log.info("API response: #{response.inspect}")
-        data = JSON.parse(response + "\n")
-      rescue RestClient::Exception => e
-        settings.error_log.warn(options)
-        settings.error_log.warn(e.message + "\n")
-        raise
-      end
-
-      data
-    end
-
-    def canvas_data(query, *params)
-      db = DBI.connect(settings.db_dsn, settings.db_user, settings.db_pwd)
-      cursor = db.prepare(query)
-      begin
-        cursor.execute(*params)
-        results = []
-        while row = cursor.fetch_hash
-          results << row
-        end
-      ensure
-        cursor.finish
-      end
-      results
-    end
-
   end
 end
