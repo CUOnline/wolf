@@ -21,8 +21,7 @@ module WolfCore
     config_file ENV['WOLF_CONFIG'] || '/etc/wolf/config.yml'
 
     configure do
-      set :api_base, "#{settings.canvas_url}/api/v#{settings.api_version}"
-      set :redis, Redis.new
+      set :redis, Redis.new(:password => settings.redis_pwd)
       set :base_views, settings.views
       set :views, [settings.views]
       set :show_exceptions, false if settings.production?
@@ -61,6 +60,7 @@ module WolfCore
       end
 
       use ::Rack::CommonLogger, settings.request_log
+      Resque.redis = settings.redis
     end
 
 

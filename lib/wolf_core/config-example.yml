@@ -16,6 +16,7 @@ development: &defaults
   # Reque web credientials
   resque_user: 'resque_web_username'
   resque_pwd: 'resque_web_password'
+  redis_pwd: 'redis_server_password'
 
   # Account ID for account level role checking
   canvas_account_id: 10230000000000011
