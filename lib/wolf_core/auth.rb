@@ -64,7 +64,7 @@ module WolfCore
     end
 
     get '/unauthorized' do
-      'Your canvas account not unauthorized to use this resource'
+      'Your canvas account is not authorized to use this resource'
     end
 
     get '/logged-out' do
