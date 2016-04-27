@@ -1,4 +1,6 @@
 require 'rest_client'
+require 'ims/lti'
+require 'oauth/request_proxy/rack_request'
 
 module WolfCore
   module Helpers
@@ -17,6 +19,16 @@ module WolfCore
       shard = "1043"
       (13 - id.length).times{ shard += "0" }
       shard + id
+    end
+
+    def valid_lti_request?(request, params)
+      provider = IMS::LTI::ToolProvider.new(
+        settings.client_id,
+        settings.client_secret,
+        params
+      )
+
+      provider.valid_request?(request)
     end
 
     def canvas_api(method, path, options={})

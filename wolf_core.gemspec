@@ -18,6 +18,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "byebug", "~> 8.2"
   spec.add_dependency "dbd-odbc", "~> 0.2"
   spec.add_dependency "dbi", "~> 0.4"
+  spec.add_dependency "ims-lti", "~> 1.1"
   spec.add_dependency "json", "~> 1.8"
   spec.add_dependency "mail", "~> 2.6"
   spec.add_dependency "minitest", "~> 5.8"
