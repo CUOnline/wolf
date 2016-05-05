@@ -4,7 +4,7 @@ require 'dbd/ODBC'
 require 'mail'
 require 'odbc'
 require 'rack/ssl-enforcer'
-require 'redis'
+require 'resque'
 require 'slim'
 
 require 'sinatra/base'

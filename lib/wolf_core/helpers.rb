@@ -9,7 +9,16 @@ module WolfCore
     end
 
     def mount_point
-      settings.respond_to?(:mount) ? settings.mount : '/' + settings.root.split('/').last
+      # By convention, the project dir name is mount point unless explicitly set
+      dir_name = settings.root.split('/').last
+      if settings.respond_to?(:mount)
+        settings.mount
+      elsif dir_name.match(/^\d+$/)
+        # Assume capistrano deploy and account for /releases/123 directories
+        '/' + settings.root.split('/')[-3]
+      else
+        '/' + dir_name
+      end
     end
 
     # Depending on context, canvas IDs sometimes require the id of the

@@ -1,16 +1,11 @@
 module WolfCore
-  class Auth < App
-    # By convention, this Auth app is usually served alongside another app,
-    # For which it provides authentication. Try to log to that app's logfile.
-    ['auth', 'error', 'request'].each do |log_type|
-      log_file = "log/#{log_type}.log"
-      if File.exists?(log_file)
-        set :"#{log_type}_log",  Logger.new(log_file, 'monthly')
-      end
-    end
+  class App
+    set :public_paths, []
+    set :always_public, [ /^\/auth$/, /^\/oauth$/, /^\/logout$/, /^\/logged-out$/,
+                          /^\/favicon.ico$/, /^\/assets\/[^\/]+$/ ]
 
-    get '/' do
-      redirect_uri = "#{request.scheme}://#{request.host_with_port}/auth/oauth"
+    get '/auth' do
+      redirect_uri = "#{request.scheme}://#{request.host_with_port}/#{mount_point}/oauth"
       redirect_params = "client_id=#{settings.client_id}&" \
                         "response_type=code&" \
                         "state=#{params['state']}&" \
@@ -49,7 +44,7 @@ module WolfCore
       settings.auth_log.info("Logged out user #{session['user_id']}")
 
       if session['access_token']
-        url = "https://ucdenver.instructure.com/login/oauth2/token"
+        url = "#{settings.canvas_url}/login/oauth2/token"
         canvas_api(:delete, url, {
           :payload => {
             :headers => {
@@ -63,42 +58,22 @@ module WolfCore
       redirect to '/logged-out'
     end
 
-    get '/unauthorized' do
-      'Your canvas account is not authorized to use this resource'
-    end
-
     get '/logged-out' do
       "You have been logged out <a href='/auth/login'>" \
       "Click here</a> to log in again."
     end
-  end
 
-  class AuthFilter
-    def initialize(app)
-      @app = app
-    end
-
-    def call(env)
-      session = env['rack.session']
-      request = Rack::Request.new(env)
-      headers = { "Content-Type"=>"text/html;charset=utf-8" }
-
-      # Redirect un-authenticated users to login
-      if session['user_id'].nil?
-        headers['Location'] = "#{request.scheme}://#{request.host_with_port}" \
-                              "/auth?state=#{request.path}"
-        # Needs no-cache headers, or it will continue to redirect after login
-        headers['Cache-control'] = 'no-cache'
-        headers['Pragma'] = 'no-cache'
-        [302, headers, []]
-
-      # Check authorization of authenticated users
-      elsif (@app.settings.allowed_roles & session['user_roles']).empty?
-        [403, headers, ['Your canvas account is unauthorized to use this page']]
-      else
-        @app.call(env)
+    before do
+      current_path = request.env['PATH_INFO']
+      skip_paths = settings.public_paths + settings.always_public
+      unless skip_paths.select{ |p| p.match(current_path) }.any?
+        if session['user_id'].nil?
+            redirect "#{mount_point}/auth?state=#{mount_point + current_path}"
+        elsif (settings.allowed_roles & session['user_roles']).empty?
+          return [ 403, {"Content-Type"=>"text/html;charset=utf-8"},
+                  "Your canvas account is unauthorized to view this page" ]
+        end
       end
-
     end
   end
 end
