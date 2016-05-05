@@ -9,7 +9,7 @@ module WolfCore
     end
 
     def mount_point
-      settings.respond_to?(:mount) ? settings.mount : ''
+      settings.respond_to?(:mount) ? settings.mount : '/' + settings.root.split('/').last
     end
 
     # Depending on context, canvas IDs sometimes require the id of the
