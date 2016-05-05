@@ -18,7 +18,7 @@ module WolfCore
     register WolfCore::Helpers
     helpers  WolfCore::Helpers
 
-    config_file ENV['WOLF_CONFIG'] || '/etc/wolf/config.yml'
+    config_file ENV['WOLF_CONFIG'] || '/etc/wolf_core.yml'
 
     configure do
       set :redis, Redis.new(:password => settings.redis_pwd)
