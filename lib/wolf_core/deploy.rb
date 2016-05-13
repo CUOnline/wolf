@@ -28,8 +28,9 @@ namespace :deploy do
     on roles(:all) do
       execute :sudo, :apachectl, :restart
 
-      if test("[ `systemctl | grep #{fetch(:application)}-worker | wc -l` -gt 0 ]")
+      if test("[ `systemctl list-unit-files | grep #{fetch(:application)}-worker | wc -l` -gt 0 ]")
         execute :sudo, :service, "#{fetch(:application)}-worker", :restart
+        execute :sudo, :systemctl, :enable, "#{fetch(:application)}-worker.service"
       end
     end
   end
