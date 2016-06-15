@@ -29,8 +29,9 @@ module WolfCore
       session['user_id'] = response['user']['id']
       session['access_token'] = response['user']['access_token']
 
-      settings.auth_log.info("User ID: #{session['user_id']}")
       session['user_roles'] = user_roles(session['user_id'])
+      settings.auth_log.info("User ID: #{session['user_id']}")
+      settings.auth_log.info("Roles: #{session['user_roles']}")
 
       url = "users/#{session[:user_id]}/profile"
       response = canvas_api(:get, url)

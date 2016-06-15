@@ -51,17 +51,15 @@ module WolfCore
     def self.setup
       set :views, ["#{root}/views", settings.base_views]
 
-      # Initialize log files
-      Dir.mkdir("#{root}/log") unless File.exists?("#{root}/log")
-      Dir.mkdir("#{root}/tmp") unless File.exists?("#{root}/tmp")
-
-      ['auth', 'error', 'resque', 'request'].each do |log_type|
-        log_file = "#{root}/log/#{log_type}.log"
-        File.new(log_file, 'w') unless File.exists?(log_file)
-        set :"#{log_type}_log",  Logger.new(log_file, 'monthly')
+      if File.writable?(settings.log_dir)
+        ['auth', 'error', 'resque', 'request'].each do |log_type|
+          log_file = File.join(settings.log_dir, "#{mount_point.gsub('/', '')}-#{log_type}.log")
+          File.new(log_file, 'w') unless File.exists?(log_file)
+          set :"#{log_type}_log",  Logger.new(log_file, 'monthly')
+        end
+        use ::Rack::CommonLogger, settings.request_log
       end
 
-      use ::Rack::CommonLogger, settings.request_log
       Resque.redis = settings.redis
     end
 

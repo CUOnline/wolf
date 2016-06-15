@@ -17,7 +17,7 @@ module WolfCore
         # Assume capistrano deploy and account for /releases/123 directories
         '/' + settings.root.split('/')[-3]
       else
-        '/' + dir_name
+        settings.development? ? '' : ('/' + dir_name)
       end
     end
 
