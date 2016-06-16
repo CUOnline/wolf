@@ -86,7 +86,7 @@ module WolfCore
     end
 
     get '/favicon.ico' do
-      redirect to '/assets/favicon.ico'
+      redirect to "#{mount_point}/assets/favicon.ico"
     end
 
   end
