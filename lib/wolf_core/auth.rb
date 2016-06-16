@@ -12,7 +12,6 @@ module WolfCore
                         "redirect_uri=#{redirect_uri}&" \
                         "scopes=/auth/userinfo"
 
-      settings.auth_log.info("Redirect params: #{redirect_params}")
       redirect "#{settings.canvas_url}/login/oauth2/auth?#{redirect_params}"
     end
 
@@ -23,26 +22,22 @@ module WolfCore
         :client_secret => settings.client_secret
       }
 
-      # Send URL in options hash because it doesn't use default api_base
+      # Send URL in options hash because it doesn't use default API URL
       url = "#{settings.canvas_url}/login/oauth2/token"
       response = canvas_api(:post, '', {:url => url, :payload => payload})
       session['user_id'] = response['user']['id']
       session['access_token'] = response['user']['access_token']
-
       session['user_roles'] = user_roles(session['user_id'])
-      settings.auth_log.info("User ID: #{session['user_id']}")
-      settings.auth_log.info("Roles: #{session['user_roles']}")
 
       url = "users/#{session[:user_id]}/profile"
       response = canvas_api(:get, url)
       session['user_email'] = response['primary_email']
-      settings.auth_log.info("Email: #{session['user_email']}\n")
 
       redirect params['state']
     end
 
     get '/logout' do
-      settings.auth_log.info("Logged out user #{session['user_id']}")
+      log("Logged out user #{session['user_id']}")
 
       if session['access_token']
         url = "#{settings.canvas_url}/login/oauth2/token"
@@ -71,8 +66,8 @@ module WolfCore
         if session['user_id'].nil?
             redirect "#{mount_point}/auth?state=#{mount_point + current_path}"
         elsif (settings.allowed_roles & session['user_roles']).empty?
-          return [ 403, {"Content-Type"=>"text/html;charset=utf-8"},
-                  "Your canvas account is unauthorized to view this page" ]
+          halt 403, {"Content-Type"=>"text/html;charset=utf-8"},
+               "Your canvas account is unauthorized to view this page"
         end
       end
     end

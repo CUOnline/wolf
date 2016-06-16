@@ -15,6 +15,7 @@ module WolfCore
   class App < Sinatra::Base
     register Sinatra::ConfigFile
     register Sinatra::Flash
+
     register WolfCore::Helpers
     helpers  WolfCore::Helpers
 
@@ -30,6 +31,8 @@ module WolfCore
       use Rack::Session::Cookie,
         :expire_after => 20 * 60,
         :secret => SecureRandom.hex
+
+      Resque.redis = settings.redis
     end
 
     Mail.defaults do
@@ -46,31 +49,11 @@ module WolfCore
       end
     end
 
-    # Sets config for child apps that depend on the root path. These can't be
-    # inherited since they are based on __FILE__ of the calling class.
-    def self.setup
-      set :views, ["#{root}/views", settings.base_views]
-
-      if File.writable?(settings.log_dir)
-        ['auth', 'error', 'resque', 'request'].each do |log_type|
-          log_file = File.join(settings.log_dir, "#{mount_point.gsub('/', '')}-#{log_type}.log")
-          File.new(log_file, 'w') unless File.exists?(log_file)
-          set :"#{log_type}_log",  Logger.new(log_file, 'monthly')
-        end
-        use ::Rack::CommonLogger, settings.request_log
-      end
-
-      Resque.redis = settings.redis
-    end
-
-
     not_found do
       slim :not_found, :layout => false
     end
 
     error do
-      settings.error_log.error(env['sinatra.error'])
-      settings.error_log.error("\n\n")
       slim :error, :layout => false
     end
 

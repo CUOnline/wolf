@@ -44,26 +44,26 @@ module WolfCore
       url = "#{settings.canvas_url}/api/v#{settings.api_version}/#{path}"
       headers = options[:headers] ? auth_header.merge(options[:headers]) : auth_header
       options.delete(:headers)
-
       options = {:method => method, :url => url, :headers => headers}.merge(options)
-      settings.request_log.info("API request: #{options.inspect}")
+      log_str = "API request: #{options.inspect}\n"
 
       begin
         response = RestClient::Request.execute(options)
-        settings.request_log.info("API response: #{response.inspect}")
         data = JSON.parse(response + "\n")
+        log_str += "API response: #{response}"
       rescue RestClient::Exception => e
-        settings.error_log.warn(options)
-        settings.error_log.warn(e.message + "\n")
+        log_str += "API exception: #{e.message}"
         raise
       end
 
+      log(log_str)
       data
     end
 
     def canvas_data(query, *params)
       db = DBI.connect(settings.db_dsn, settings.db_user, settings.db_pwd)
       cursor = db.prepare(query)
+
       begin
         cursor.execute(*params)
         results = []
@@ -73,7 +73,21 @@ module WolfCore
       ensure
         cursor.finish
       end
+
+      log("Data query: #{query} \n Values: #{params} \n Results: #{results.count}")
       results
+    end
+
+    def log(message, log_level=:info, log_name='wolf_log')
+      begin
+        log = Logger.new(File.join(settings.log_dir, "#{log_name}"), 5, 5000000)
+        log.send(log_level, "#{mount_point}\n" + message + "\n")
+      rescue StandardError => e
+        # Logging errors shouldn't blow up the application
+        STDERR.puts("Logging failed for message: #{message}")
+        STDERR.puts("#{e.to_s}")
+        STDERR.puts(e.backtrace.join("\n"))
+      end
     end
 
     def user_roles(user_id)
@@ -92,9 +106,8 @@ module WolfCore
         WHERE user_dim.canvas_id = #{user_id}}
 
       roles += canvas_data(query_string).collect{ |role| role['name'] }
-
-      settings.auth_log.info("Roles: #{roles.inspect}")
-      settings.auth_log.info("Allowed roles: #{settings.allowed_roles.inspect}")
+      log("User role check for ID: #{user_id} \nRoles: #{roles.inspect} \n"\
+          "Allowed roles: #{settings.allowed_roles.inspect}")
 
       roles
     end
