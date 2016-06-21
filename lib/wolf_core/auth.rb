@@ -24,13 +24,13 @@ module WolfCore
 
       # Send URL in options hash because it doesn't use default API URL
       url = "#{settings.canvas_url}/login/oauth2/token"
-      response = canvas_api(:post, '', {:url => url, :payload => payload})
+      response = canvas_api(:post, '', {:url => url, :payload => payload})['json']
       session['user_id'] = response['user']['id']
       session['access_token'] = response['user']['access_token']
       session['user_roles'] = user_roles(session['user_id'])
 
       url = "users/#{session[:user_id]}/profile"
-      response = canvas_api(:get, url)
+      response = canvas_api(:get, url)['json']
       session['user_email'] = response['primary_email']
 
       redirect params['state']

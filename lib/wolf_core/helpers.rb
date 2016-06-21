@@ -40,8 +40,27 @@ module WolfCore
       provider.valid_request?(request)
     end
 
+    # Canvas API returns pagination info in a link header string
+    # https://canvas.instructure.com/doc/api/file.pagination.html
+    def parse_pages(link_header)
+      pages = {}
+      link_header.split(',').each do |l|
+        halves = l.split(';')
+        key = halves[1].match(/rel=\"(.+)\"/)[1]
+        url = halves[0].match(/<(.+)>/)[1]
+        pages[key] = url
+      end
+
+      pages
+    end
+
     def canvas_api(method, path, options={})
       url = "#{settings.canvas_url}/api/v#{settings.api_version}/#{path}"
+
+      # Default page size to maximum if not specified
+      if !url.index('per_page=')
+        url += ( url.index('?') ? '&per_page=100' : '?per_page=100' )
+      end
       headers = options[:headers] ? auth_header.merge(options[:headers]) : auth_header
       options.delete(:headers)
       options = {:method => method, :url => url, :headers => headers}.merge(options)
@@ -49,7 +68,8 @@ module WolfCore
 
       begin
         response = RestClient::Request.execute(options)
-        data = JSON.parse(response + "\n")
+        data = { 'json' => JSON.parse(response), 'headers' => response.headers }
+
         log_str += "API response: #{response}"
       rescue RestClient::Exception => e
         log_str += "API exception: #{e.message}"
@@ -93,7 +113,7 @@ module WolfCore
     def user_roles(user_id)
       # Account level roles
       url = "accounts/#{settings.canvas_account_id}/admins?user_id[]=#{user_id}"
-      roles = canvas_api(:get, url).collect{ |user| user['role'] }
+      roles = canvas_api(:get, url)['json'].collect{ |user| user['role'] }
 
       # Course level roles
       query_string = %{
@@ -118,7 +138,7 @@ module WolfCore
         terms = {}
         url = "accounts/#{settings.canvas_account_id}/terms?per_page=50"
 
-        canvas_api(:get, url)['enrollment_terms']
+        canvas_api(:get, url)['json']['enrollment_terms']
           .reject { |term| [1, 35, 38, 39].include?(term['id']) }
           .map    { |term| terms[term['id'].to_s] = term['name'] }
 
