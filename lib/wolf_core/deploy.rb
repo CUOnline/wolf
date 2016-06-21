@@ -41,6 +41,7 @@ namespace :deploy do
       execute 'sudo', 'systemctl', 'restart', 'httpd'
 
       if test("[ `systemctl list-unit-files | grep #{fetch(:application)}-worker | wc -l` -gt 0 ]")
+        execute 'sudo', 'daemon-reload'
         execute 'sudo', 'systemctl', 'restart', "#{fetch(:application)}-worker"
       end
     end
