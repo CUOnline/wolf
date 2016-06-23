@@ -58,16 +58,15 @@ module WolfCore
       url = "#{settings.canvas_url}/api/v#{settings.api_version}/#{path}"
 
       # Default page size to maximum if not specified
-      if !url.index('per_page=')
-        url += ( url.index('?') ? '&per_page=100' : '?per_page=100' )
-      end
+      url += ( url.index('?') ? '&per_page=100' : '?per_page=100' ) if !url.index('per_page=')
+
       headers = options[:headers] ? auth_header.merge(options[:headers]) : auth_header
       options.delete(:headers)
       options = {:method => method, :url => url, :headers => headers}.merge(options)
       log_str = "API request: #{options.inspect}\n"
 
       begin
-        response = RestClient::Request.execute(options)
+        response = RestClient::Request.execute(options).force_encoding('UTF-8')
         data = { 'json' => JSON.parse(response), 'headers' => response.headers }
 
         log_str += "API response: #{response}"
