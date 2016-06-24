@@ -55,7 +55,7 @@ module WolfCore
     end
 
     get '/logged-out' do
-      "You have been logged out <a href='#{mount_point}/auth/login'>" \
+      "You have been logged out <a href='#{mount_point}/login'>" \
       "Click here</a> to log in again."
     end
 
