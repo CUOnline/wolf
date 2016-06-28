@@ -67,8 +67,6 @@ module WolfCore
 
       begin
         response = RestClient::Request.execute(options).force_encoding('UTF-8')
-        data = { 'json' => JSON.parse(response), 'headers' => response.headers }
-
         log_str += "API response: #{response}"
       rescue RestClient::Exception => e
         log_str += "API exception: #{e.message}"
@@ -76,7 +74,7 @@ module WolfCore
       end
 
       log(log_str)
-      data
+      options[:raw] ? response : JSON.parse(response)
     end
 
     def canvas_data(query, *params)
@@ -112,7 +110,7 @@ module WolfCore
     def user_roles(user_id)
       # Account level roles
       url = "accounts/#{settings.canvas_account_id}/admins?user_id[]=#{user_id}"
-      roles = canvas_api(:get, url)['json'].collect{ |user| user['role'] }
+      roles = canvas_api(:get, url).collect{ |user| user['role'] }
 
       # Course level roles
       query_string = %{
@@ -137,7 +135,7 @@ module WolfCore
         terms = {}
         url = "accounts/#{settings.canvas_account_id}/terms?per_page=50"
 
-        canvas_api(:get, url)['json']['enrollment_terms']
+        canvas_api(:get, url)['enrollment_terms']
           .reject { |term| [1, 35, 38, 39].include?(term['id']) }
           .map    { |term| terms[term['id'].to_s] = term['name'] }
 
