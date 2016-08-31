@@ -24,7 +24,6 @@ module WolfCore
     configure do
       set :redis, Redis.new(:password => settings.redis_pwd)
       set :base_views, settings.views
-      set :views, [settings.views]
       set :show_exceptions, false if settings.production?
 
       use Rack::SslEnforcer if !settings.development?
@@ -45,6 +44,7 @@ module WolfCore
     # Override default template lookup to allow multiple view directories.
     helpers do
       def find_template(views, name, engine, &block)
+        views = [views, settings.base_views]
         views.each { |v| super(v, name, engine, &block) }
       end
     end
