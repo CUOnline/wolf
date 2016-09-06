@@ -54,27 +54,13 @@ module WolfCore
       pages
     end
 
-    def canvas_api(method, path, options={})
-      url = "#{settings.canvas_url}/api/v#{settings.api_version}/#{path}"
-
-      # Default page size to maximum if not specified
-      url += ( url.index('?') ? '&per_page=100' : '?per_page=100' ) if !url.index('per_page=')
-
-      headers = options[:headers] ? auth_header.merge(options[:headers]) : auth_header
-      options.delete(:headers)
-      options = {:method => method, :url => url, :headers => headers}.merge(options)
-      log_str = "API request: #{options.inspect}\n"
-
-      begin
-        response = RestClient::Request.execute(options).force_encoding('UTF-8')
-        log_str += "API response: #{response}"
-      rescue RestClient::Exception => e
-        log_str += "API exception: #{e.message}"
-        raise
+    def canvas_api
+      @api ||= Faraday.new(:url => "#{settings.canvas_url}/api/v1") do |faraday|
+        faraday.request :oauth2, settings.canvas_token
+        faraday.response :json, :content_type => /\bjson$/
+        faraday.response :caching, settings.api_cache if settings.respond_to?(:api_cache)
+        faraday.adapter :typhoeus
       end
-
-      log(log_str)
-      options[:raw] ? response : JSON.parse(response)
     end
 
     def canvas_data(query, *params)
@@ -110,7 +96,7 @@ module WolfCore
     def user_roles(user_id)
       # Account level roles
       url = "accounts/#{settings.canvas_account_id}/admins?user_id[]=#{user_id}"
-      roles = canvas_api(:get, url).collect{ |user| user['role'] }
+      roles = canvas_api.get(url).body.collect{ |user| user['role'] }
 
       # Course level roles
       query_string = %{
@@ -135,7 +121,7 @@ module WolfCore
         terms = {}
         url = "accounts/#{settings.canvas_account_id}/terms?per_page=50"
 
-        canvas_api(:get, url)['enrollment_terms']
+        canvas_api.get(url).body['enrollment_terms']
           .reject { |term| [1, 35, 38, 39].include?(term['id']) }
           .map    { |term| terms[term['id'].to_s] = term['name'] }
 

@@ -1,11 +1,16 @@
 require_relative './helpers'
 
 require 'dbd/ODBC'
+require 'faraday'
+require 'faraday_middleware'
 require 'mail'
 require 'odbc'
 require 'rack/ssl-enforcer'
 require 'resque'
+require 'redis-activesupport'
 require 'slim'
+require 'typhoeus'
+require 'typhoeus/adapters/faraday'
 
 require 'sinatra/base'
 require 'sinatra/config_file'
@@ -22,9 +27,13 @@ module WolfCore
     config_file ENV['WOLF_CONFIG'] || '/etc/wolf_core.yml'
 
     configure do
-      set :redis, Redis.new(:password => settings.redis_pwd)
-      set :base_views, settings.views
       set :show_exceptions, false if settings.production?
+      set :base_views, settings.views
+
+      set :redis, Redis.new(:password => settings.redis_pwd)
+      set :api_cache, ActiveSupport::Cache::RedisStore.new(
+        :expires_in => 3600,
+        :password => settings.redis_pwd)
 
       use Rack::SslEnforcer if !settings.development?
       use Rack::Session::Cookie,
