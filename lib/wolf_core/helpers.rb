@@ -93,6 +93,21 @@ module WolfCore
       results
     end
 
+    def oauth_callback(oauth_response)
+      session['user_roles'] = user_roles(oauth_response['user']['id'])
+    end
+
+    def authorized
+      user_roles = session['user_roles'] || []
+      allowed_roles = if settings.respond_to?(:allowed_roles)
+        settings.allowed_roles
+      else
+        []
+      end
+
+      (allowed_roles & user_roles).any?
+    end
+
     def user_roles(user_id)
       # Account level roles
       url = "accounts/#{settings.canvas_account_id}/admins?user_id[]=#{user_id}"

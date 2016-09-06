@@ -13,14 +13,16 @@ require 'typhoeus'
 require 'typhoeus/adapters/faraday'
 
 require 'sinatra/base'
-require 'sinatra/custom_logger'
+require 'sinatra/canvas_auth'
 require 'sinatra/config_file'
+require 'sinatra/custom_logger'
 require 'sinatra/flash'
 
 module WolfCore
   class App < Sinatra::Base
     register Sinatra::ConfigFile
     register Sinatra::Flash
+    register Sinatra::CanvasAuth
 
     register WolfCore::Helpers
     helpers  WolfCore::Helpers
