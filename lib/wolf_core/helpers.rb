@@ -21,6 +21,17 @@ module WolfCore
       end
     end
 
+    def create_logger
+      prefix = mount_point.gsub(/\//, '')
+      prefix = 'wolf' if prefix.empty?
+
+      begin
+        Logger.new(File.join(settings.log_dir, "#{prefix}_log"), 5, 5000000)
+      rescue StandardError => e
+        Logger.new(STDOUT)
+      end
+    end
+
     # Depending on context, canvas IDs sometimes require the id of the
     # hosting shard to be prepended. Seems static, so hardcode for now.
     def shard_id(id)
@@ -58,6 +69,7 @@ module WolfCore
       @api ||= Faraday.new(:url => "#{settings.canvas_url}/api/v1") do |faraday|
         faraday.request :oauth2, settings.canvas_token
         faraday.response :json, :content_type => /\bjson$/
+        faraday.response :logger, settings.logger, :bodies => true
         faraday.response :caching, settings.api_cache if settings.respond_to?(:api_cache)
         faraday.adapter :typhoeus
       end
@@ -77,20 +89,8 @@ module WolfCore
         cursor.finish
       end
 
-      log("Data query: #{query} \n Values: #{params} \n Results: #{results.count}")
+      logger.info("Data query: #{query} \n Values: #{params} \n Results: #{results.count}")
       results
-    end
-
-    def log(message, log_level=:info, log_name='wolf_log')
-      begin
-        log = Logger.new(File.join(settings.log_dir, "#{log_name}"), 5, 5000000)
-        log.send(log_level, "#{mount_point}\n" + message + "\n")
-      rescue StandardError => e
-        # Logging errors shouldn't blow up the application
-        STDERR.puts("Logging failed for message: #{message}")
-        STDERR.puts("#{e.to_s}")
-        STDERR.puts(e.backtrace.join("\n"))
-      end
     end
 
     def user_roles(user_id)
@@ -109,8 +109,9 @@ module WolfCore
         WHERE user_dim.canvas_id = #{user_id}}
 
       roles += canvas_data(query_string).collect{ |role| role['name'] }
-      log("User role check for ID: #{user_id} \nRoles: #{roles.inspect} \n"\
-          "Allowed roles: #{settings.allowed_roles.inspect}")
+      logger.info("User role check for ID: #{user_id} \n"\
+                  "Roles: #{roles.inspect} \n"\
+                  "Allowed roles: #{settings.allowed_roles.inspect}")
 
       roles
     end

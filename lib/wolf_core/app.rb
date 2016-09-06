@@ -13,6 +13,7 @@ require 'typhoeus'
 require 'typhoeus/adapters/faraday'
 
 require 'sinatra/base'
+require 'sinatra/custom_logger'
 require 'sinatra/config_file'
 require 'sinatra/flash'
 
@@ -23,12 +24,14 @@ module WolfCore
 
     register WolfCore::Helpers
     helpers  WolfCore::Helpers
+    helpers Sinatra::CustomLogger
 
     config_file ENV['WOLF_CONFIG'] || '/etc/wolf_core.yml'
 
     configure do
       set :show_exceptions, false if settings.production?
       set :base_views, settings.views
+      set :logger, create_logger
 
       set :redis, Redis.new(:password => settings.redis_pwd)
       set :api_cache, ActiveSupport::Cache::RedisStore.new(
