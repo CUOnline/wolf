@@ -39,4 +39,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "minitest", "~> 5.8"
   spec.add_development_dependency "minitest-rg", "~> 5.2"
   spec.add_development_dependency "mocha", "~> 1.1"
+  spec.add_development_dependency "webmock", "~> 2.1.0"
 end

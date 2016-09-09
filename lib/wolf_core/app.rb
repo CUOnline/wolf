@@ -34,6 +34,7 @@ module WolfCore
       set :show_exceptions, false if settings.production?
       set :base_views, settings.views
       set :logger, create_logger
+      set :auth_paths, []
 
       set :redis, Redis.new(:password => settings.redis_pwd)
       set :api_cache, ActiveSupport::Cache::RedisStore.new(
