@@ -16,19 +16,47 @@ html data-mount-point="#{mount_point}"
       script type="text/javascript" src="#{mount_point}/main.js"
 
     css:
-      body {
-        background-color: #cfb87c;
+      @font-face {
+        font-family: OpenSans;
+        src: url("#{mount_point}/assets/OpenSans-Regular.ttf")
       }
 
-      #wrapper {
+      @font-face {
+        font-family: OpenSans-Bold;
+        src: url("#{mount_point}/assets/OpenSans-Bold.ttf")
+      }
+
+      @font-face {
+        font-family: OpenSans-Light;
+        src: url("#{mount_point}/assets/OpenSans-Light.ttf")
+      }
+
+      @font-face {
+        font-family: OpenSans-Italic;
+        src: url("#{mount_point}/assets/OpenSans-Italic.ttf")
+      }
+
+      body {
+        background-color: #565a5c;
+        font-family: OpenSans, Helvetica, Arial, sans-serif;
+      }
+
+      #content {
         background-color: #ffffff;
-        border: 3px solid black;
+        border: 2px solid black;
         margin: 20px auto;
-        width: 80%;
         padding: 10px;
+        width: 75%;
+      }
+
+      #logo {
+        margin: 50px auto;
+        display: block;
+        width: 275px;
       }
 
   body
-    div#wrapper
+    img#logo [src='#{mount_point}/assets/cu-online.png']
+    div#content
       == styled_flash
       == yield
