@@ -18,6 +18,8 @@ require 'sinatra/config_file'
 require 'sinatra/custom_logger'
 require 'sinatra/flash'
 
+require File.join(File.dirname(__FILE__), '../faraday_middleware/response/parallel_caching.rb')
+
 module WolfCore
   class App < Sinatra::Base
     register Sinatra::ConfigFile
