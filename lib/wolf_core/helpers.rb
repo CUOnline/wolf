@@ -66,11 +66,12 @@ module WolfCore
     end
 
     def canvas_api
+      cache_enabled = settings.respond_to?(:api_cache) && settings.api_cache
       @api ||= Faraday.new(:url => "#{settings.canvas_url}/api/v1") do |faraday|
         faraday.request :oauth2, settings.canvas_token
         faraday.response :json, :content_type => /\bjson$/
         faraday.response :logger, settings.logger, :bodies => true
-        faraday.response :caching, settings.api_cache if settings.respond_to?(:api_cache)
+        faraday.response :caching, settings.api_cache if cache_enabled
         faraday.adapter :typhoeus
       end
     end
