@@ -1,0 +1,46 @@
+- header_content ||= false
+- email_info ||= false
+
+css:
+  #canvas-link {
+    font-size: .9em;
+  }
+
+  #header {
+    font-family: OpenSans, Helvetica, Arial, sans-serif !important;
+  }
+
+  #header > h2 {
+    margin-bottom: 0;
+    margin-top: 10px;
+  }
+
+  #header > p {
+    margin: 10px 0px;
+  }
+
+div#header
+  -if settings.respond_to?(:title)
+    h2 #{settings.title}
+
+  a#canvas-link [href='#{settings.canvas_url}' target='_blank'] #{settings.canvas_url}
+
+  -if header_content
+    p
+      == header_content
+
+  -if email_info
+    p
+      - if session['user_email']
+        | Report will be sent to #{session['user_email']}
+      - else
+        | Unable to retreive email address for sending report. Try updating your contact email 
+        a [href='#{settings.canvas_url}/profile/settings'] here
+        | , then logging in again
+      - if session['user_id']
+        a.float-right [href="#{mount_point}#{settings.logout_path}"] Log Out
+  -else
+    - if session['user_id']
+      a.float-right [href="#{mount_point}#{settings.logout_path}"] Log Out
+
+hr

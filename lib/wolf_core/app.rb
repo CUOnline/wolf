@@ -60,6 +60,7 @@ module WolfCore
     end
 
     # Override default template lookup to allow multiple view directories.
+    # Render will look in both child app views and wolf_core views
     helpers do
       def find_template(views, name, engine, &block)
         views = [views, settings.base_views]
