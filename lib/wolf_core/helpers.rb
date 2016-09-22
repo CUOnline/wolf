@@ -4,6 +4,9 @@ require 'oauth/request_proxy/rack_request'
 
 module WolfCore
   module Helpers
+    # Specifies the base path/entry point for the rack app.
+    # Allows proper construction of URLS from relative paths by accounting for
+    # an apache alias or being mounted on top of another rack app (for example)
     def mount_point
       # By convention, the project dir name is mount point unless explicitly set
       dir_name = settings.root.split('/').last
@@ -17,6 +20,9 @@ module WolfCore
       end
     end
 
+    # Figure log name based on mount point
+    # If something bad happens (i.e. permission denied),
+    # the app shouldn't blow up - so just log to stdout instead
     def create_logger
       prefix = mount_point.gsub(/\//, '')
       prefix = 'wolf' if prefix.empty?
@@ -71,6 +77,7 @@ module WolfCore
       pages
     end
 
+    # Build faraday connection for API requests, with middleware for repeated tasks
     def canvas_api
       cache_enabled = settings.respond_to?(:api_cache) && settings.api_cache
       @api ||= Faraday.new(:url => "#{settings.canvas_url}/api/v1") do |faraday|
@@ -82,6 +89,8 @@ module WolfCore
       end
     end
 
+    # Handle connection to Canvas Redshfit instance (postgres queries)
+    # Requires ODBC data source/drivers configured on server
     def canvas_data(query, *params)
       db = DBI.connect(settings.db_dsn, settings.db_user, settings.db_pwd)
       cursor = db.prepare(query)
@@ -100,10 +109,12 @@ module WolfCore
       results
     end
 
+    # Called by sinatra-canvas_auth gem after logging in with OAuth
     def oauth_callback(oauth_response)
       session['user_roles'] = user_roles(oauth_response['user']['id'])
     end
 
+    # Called by sinatra-canvas_auth gem to check if authenticated user is authorized
     def authorized
       user_roles = session['user_roles'] || []
       allowed_roles = if settings.respond_to?(:allowed_roles)
@@ -115,12 +126,13 @@ module WolfCore
       (allowed_roles & user_roles).any?
     end
 
+    # Canvas users can have roles assigned at account or course level; so grab them all
     def user_roles(user_id)
-      # Account level roles
+      # Account level
       url = "accounts/#{settings.canvas_account_id}/admins?user_id[]=#{user_id}"
       roles = canvas_api.get(url).body.collect{ |user| user['role'] }
 
-      # Course level roles
+      # Course level
       query_string = %{
         SELECT distinct role_dim.name
         FROM role_dim
