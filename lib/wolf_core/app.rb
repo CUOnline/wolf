@@ -47,11 +47,13 @@ module WolfCore
         :expire_after => 20 * 60,
         :secret => SecureRandom.hex
 
-      Mail.defaults do
-        delivery_method :smtp,
-        address: WolfCore::App.settings.smtp_server,
-        port: WolfCore::App.settings.smtp_port,
-        openssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
+      if settings.respond_to?(:smtp_server) && settings.respond_to?(:smtp_port)
+        Mail.defaults do
+          delivery_method :smtp,
+          address: WolfCore::App.settings.smtp_server,
+          port: WolfCore::App.settings.smtp_port,
+          openssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
+        end
       end
 
       Resque.redis = settings.redis
