@@ -4,10 +4,6 @@ require 'oauth/request_proxy/rack_request'
 
 module WolfCore
   module Helpers
-    def auth_header
-      { Authorization: "Bearer #{settings.canvas_token}" }
-    end
-
     def mount_point
       # By convention, the project dir name is mount point unless explicitly set
       dir_name = settings.root.split('/').last
