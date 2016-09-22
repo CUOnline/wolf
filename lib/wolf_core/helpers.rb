@@ -28,6 +28,16 @@ module WolfCore
       end
     end
 
+    # Check available app settings and translate into hash for initializing redis client
+    def redis_options
+      options = {}
+      options['password'] = settings.redis_pwd if settings.respond_to?(:redis_pwd)
+      ['url', 'host', 'port', 'path'].each do |opt|
+        options[opt] = settings.send("redis_#{opt}") if settings.respond_to?("redis_#{opt}")
+      end
+      options
+    end
+
     # Depending on context, canvas IDs sometimes require the id of the
     # hosting shard to be prepended. Seems static, so hardcode for now.
     def shard_id(id)

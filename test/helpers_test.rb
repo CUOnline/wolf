@@ -38,6 +38,21 @@ class HelpersTest < Minitest::Test
     File.delete('./wolf_log')
   end
 
+  def test_redis_options
+    expected = {
+      'url' => 'redis://localhost:6379/0',
+      'port' => '1234',
+      'path' => 'unix://path',
+      'password' => 'password123'
+    }
+
+    app.settings.stubs(:redis_url).returns(expected['url'])
+    app.settings.stubs(:redis_port).returns(expected['port'])
+    app.settings.stubs(:redis_path).returns(expected['path'])
+    app.settings.stubs(:redis_pwd).returns(expected['password'])
+
+    assert_equal(expected, app.redis_options)
+  end
 
   def test_oauth_callback
     user_id = 123

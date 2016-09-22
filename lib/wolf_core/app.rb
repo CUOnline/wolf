@@ -38,25 +38,23 @@ module WolfCore
       set :base_views, settings.views
       set :logger, create_logger
       set :auth_paths, []
-
-      set :redis, Redis.new(:password => settings.redis_pwd)
+      set :redis, Redis.new(redis_options)
       set :api_cache, ActiveSupport::Cache::RedisStore.new(
-        :expires_in => 3600,
-        :password => settings.redis_pwd)
+                        redis_options.merge({'expires_in' => 3600}))
 
       use Rack::SslEnforcer if !settings.development?
       use Rack::Session::Cookie,
         :expire_after => 20 * 60,
         :secret => SecureRandom.hex
 
-      Resque.redis = settings.redis
-    end
+      Mail.defaults do
+        delivery_method :smtp,
+        address: WolfCore::App.settings.smtp_server,
+        port: WolfCore::App.settings.smtp_port,
+        openssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
+      end
 
-    Mail.defaults do
-      delivery_method :smtp,
-      address: WolfCore::App.settings.smtp_server,
-      port: WolfCore::App.settings.smtp_port,
-      openssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
+      Resque.redis = settings.redis
     end
 
     # Override default template lookup to allow multiple view directories.
