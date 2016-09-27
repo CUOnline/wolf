@@ -56,15 +56,22 @@ class HelpersTest < Minitest::Test
 
   def test_oauth_callback
     user_id = 123
+    user_name = 'Name Namerson'
+    user_email = 'test@example.com'
     user_roles = ['AccountAdmin']
     session = {}
-    response = {'user' => {'id' => user_id}}
+    oauth_response = {'user' => {'id' => user_id, 'name' => user_name}}
+    profile_response = {'primary_email' => user_email}.to_json
 
-    app.expects(:session).returns(session)
+    app.stubs(:session).returns(session)
     app.expects(:user_roles).with(user_id).returns(user_roles)
-    session.expects(:[]=).with('user_roles', user_roles)
+    stub_request(:get, /users\/#{user_id}\/profile/)
+      .to_return(body: profile_response, headers: {'Content-Type' => 'application/json'})
 
-    app.oauth_callback(response)
+    app.oauth_callback(oauth_response)
+    assert_equal user_roles, session['user_roles']
+    assert_equal user_name, session['user_name']
+    assert_equal user_email, session['user_email']
   end
 
   def test_authorized_success

@@ -112,6 +112,12 @@ module WolfCore
     # Called by sinatra-canvas_auth gem after logging in with OAuth
     def oauth_callback(oauth_response)
       session['user_roles'] = user_roles(oauth_response['user']['id'])
+
+      session['user_name'] = oauth_response['user']['name']
+      session['user_id'] = oauth_response['user']['id']
+
+      email_response = canvas_api.get("users/#{session['user_id']}/profile")
+      session['user_email'] = email_response.body['primary_email']
     end
 
     # Called by sinatra-canvas_auth gem to check if authenticated user is authorized
