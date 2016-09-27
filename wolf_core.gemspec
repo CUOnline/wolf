@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "resque", "~> 1.25"
   spec.add_dependency "ruby-odbc", "~> 0.99997"
   spec.add_dependency "sinatra", "~> 1.4"
-  spec.add_dependency "sinatra-canvas_auth", "~> 0.0.2"
+  spec.add_dependency "sinatra-canvas_auth", "~> 0.0.3"
   spec.add_dependency "sinatra-config-file", "~> 1.0"
   spec.add_dependency "sinatra-flash", "~> 0.3"
 
