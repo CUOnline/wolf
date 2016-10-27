@@ -57,7 +57,13 @@ module WolfCore
       shard + id
     end
 
+    # Validate OAuth signatures
     def valid_lti_request?(request, params)
+      # Passenger 5 adds trailing slashes to request paths, while Canvas strips
+      # them from LTI launch paths. Therefore we have to strip them here to end
+      # up with the same OAuth signature calculated by Canvas
+      request.env["PATH_INFO"].gsub!(/\/$/, '')
+
       provider = IMS::LTI::ToolProvider.new(
         settings.client_id,
         settings.client_secret,

@@ -102,17 +102,21 @@ class HelpersTest < Minitest::Test
   def test_valid_lti_request
     provider = mock()
     provider.expects(:valid_request?).returns(true)
+    request = mock()
+    request.stubs(:env).returns({'PATH_INFO' => '/'})
     IMS::LTI::ToolProvider.expects(:new).returns(provider)
 
-    assert app.valid_lti_request?(mock('request'), mock('params'))
+    assert app.valid_lti_request?(request, mock('params'))
   end
 
   def test_invalid_lti_request
     provider = mock()
     provider.expects(:valid_request?).returns(false)
+    request = mock()
+    request.stubs(:env).returns({'PATH_INFO' => '/'})
     IMS::LTI::ToolProvider.stubs(:new).returns(provider)
 
-    refute app.valid_lti_request?(mock('request'), mock('params'))
+    refute app.valid_lti_request?(request, mock('params'))
   end
 
   def test_canvas_api
