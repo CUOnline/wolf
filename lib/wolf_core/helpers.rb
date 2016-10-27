@@ -26,12 +26,16 @@ module WolfCore
     def create_logger
       prefix = mount_point.gsub(/\//, '')
       prefix = 'wolf' if prefix.empty?
+      log_path = File.join(settings.log_dir, "#{prefix}_log")
 
       begin
-        Logger.new(File.join(settings.log_dir, "#{prefix}_log"), 5, 5000000)
+        logger = Logger.new(log_path, 5, 5000000)
       rescue StandardError => e
-        Logger.new(STDOUT)
+        logger = Logger.new(STDERR)
+        logger.warn("Error creating #{log_path}, logging to STDERR")
       end
+
+      logger
     end
 
     # Check available app settings and translate into hash for initializing redis client
