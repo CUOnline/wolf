@@ -88,7 +88,7 @@ module WolfCore
     end
 
     get '/favicon.ico' do
-      redirect to "#{mount_point}/assets/favicon.ico"
+      send_file File.join(File.dirname(__FILE__), 'public', 'favicon.ico')
     end
 
   end

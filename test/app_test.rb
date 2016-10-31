@@ -48,6 +48,11 @@ class AppTest < Minitest::Test
     assert_equal 404, last_response.status
   end
 
+  def test_get_favicon
+    get '/favicon.ico'
+    assert_equal 200, last_response.status
+  end
+
   def test_settings_override
     default_id = app.settings.canvas_account_id
   end

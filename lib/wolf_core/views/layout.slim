@@ -4,7 +4,8 @@ doctype html
 html data-mount-point="#{mount_point}"
   head
     title == settings.title
-    link rel="icon" href="/favicon.ico"
+    link rel="icon" href="#{mount_point}/favicon.ico" type="image/x-icon"
+    link rel="shortcut icon" href="#{mount_point}/favicon.ico" type="image/x-icon"
 
     script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"
     link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
