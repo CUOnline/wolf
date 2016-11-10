@@ -40,7 +40,7 @@ module WolfCore
       set :auth_paths, []
       set :redis, Redis.new(redis_options)
       set :api_cache, ActiveSupport::Cache::RedisStore.new(
-                        redis_options.merge({'expires_in' => 3600}))
+                        redis_options.merge({:expires_in => 3600}))
 
       use Rack::SslEnforcer if !settings.development?
       use Rack::Session::Cookie,
