@@ -38,6 +38,7 @@ module WolfCore
       set :base_views, settings.views
       set :logger, create_logger
       set :auth_paths, []
+      set :public_paths, [/assets/, /favicon/]
       set :redis, Redis.new(redis_options)
       set :api_cache, ActiveSupport::Cache::RedisStore.new(
                         redis_options.merge({:expires_in => 3600}))
