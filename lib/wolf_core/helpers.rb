@@ -1,4 +1,3 @@
-require 'rest_client'
 require 'ims/lti'
 require 'oauth/request_proxy/rack_request'
 
