@@ -104,6 +104,7 @@ We also need to tell passenger to use ruby 2.3 instead of the default system rub
 
 ##### Install ODBC Drivers & config to allow connection to Canvas Data Redshift
 See also: http://docs.aws.amazon.com/redshift/latest/mgmt/install-odbc-driver-linux.html
+
 `wget  https://s3.amazonaws.com/redshift-downloads/drivers/AmazonRedshiftODBC-64bit-1.2.7.1007-1.x86_64.rpm`
 
 `yum --nogpgcheck localinstall ./AmazonRedshiftODBC-64bit-1.2.7.1007-1.x86_64.rpm`
@@ -142,6 +143,7 @@ Capistrano can't give you a sudo password prompt, so this will allow the deploy 
 `visudo`
 
 Add the following line at the bottom of the file:
+
 `deployusername ALL=(ALL) NOPASSWD:/usr/bin/cp, /usr/bin/systemctl, /usr/sbin/semanage, /usr/sbin/restorecon, /usr/bin/restorecon`
 
 ##### Enable & Rerstart services
@@ -354,7 +356,7 @@ API calls to ucdenver.instrcuture.com
 
   * **oauth_callback(oauth_response[Hash])**
 
-    **authorized() => Boolean**
+  * **authorized() => Boolean**
 
   These two methods are provided to customize behavior of [sinatra-canvas_auth](https://github.com/CUOnline/sinatra-canvas_auth#callbacks) See link for documentation. 
 
